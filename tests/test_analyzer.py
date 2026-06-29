@@ -8,8 +8,7 @@ def main():
         "examples/semgrep_output.json"
     )
 
-    analyzer = FindingAnalyzer()
-
+    analyzer = FindingAnalyzer("examples/vulnerable_app")
     result = analyzer.analyze(findings[0])
 
     print()

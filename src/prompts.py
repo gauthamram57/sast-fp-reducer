@@ -1,5 +1,5 @@
 """
-Prompt builder for the SAST False Positive Reducer.
+Prompt builder for the AI-assisted SAST triage engine.
 """
 
 from src.models import CodeContext, SemgrepFinding
@@ -9,24 +9,19 @@ def build_prompt(
     finding: SemgrepFinding,
     context: CodeContext,
 ) -> str:
-    """
-    Build a structured prompt for the LLM.
-    """
 
-    prompt = f"""
-You are a Senior Application Security Engineer.
+    return f"""
+You are a Principal Application Security Engineer.
 
-Your task is to review a Semgrep SAST finding.
+You are reviewing a Semgrep SAST finding.
 
-Determine whether it is:
+Your task is NOT to blindly trust the scanner.
 
-- TRUE_POSITIVE
-- FALSE_POSITIVE
-- NEEDS_REVIEW
+Analyze the finding like a human AppSec engineer.
 
-Return ONLY valid JSON.
-
-Finding Details
+========================
+Finding Metadata
+========================
 
 Rule ID:
 {finding.rule_id}
@@ -46,25 +41,73 @@ OWASP:
 Technology:
 {", ".join(finding.technology)}
 
+========================
 Source Code
+========================
 
 ----- BEFORE -----
+
 {context.before}
 
 ----- TARGET -----
+
 {context.target}
 
 ----- AFTER -----
+
 {context.after}
 
-Respond ONLY in this JSON format:
+========================
+Instructions
+========================
+
+Perform a security review.
+
+Determine:
+
+1. Vulnerability type.
+
+2. User-controlled source.
+
+3. Dangerous sink.
+
+4. Is the input sanitized?
+
+5. Is the vulnerability realistically exploitable?
+
+6. Does it match the reported CWE?
+
+7. Does it match the OWASP category?
+
+8. Explain your reasoning.
+
+9. Recommend the best remediation.
+
+10. Final classification.
+
+Return ONLY valid JSON.
 
 {{
-    "classification": "TRUE_POSITIVE",
-    "confidence": 95,
-    "reasoning": "...",
-    "developer_action": "..."
+    "vulnerability":"",
+
+    "source":"",
+
+    "sink":"",
+
+    "sanitized":false,
+
+    "exploitable":true,
+
+    "cwe_match":true,
+
+    "owasp_match":true,
+
+    "classification":"TRUE_POSITIVE",
+
+    "confidence":95,
+
+    "reasoning":"",
+
+    "developer_action":""
 }}
 """
-
-    return prompt.strip()
