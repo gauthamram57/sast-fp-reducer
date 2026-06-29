@@ -3,7 +3,7 @@ Groq AI Provider
 """
 
 import os
-
+from src.logger import debug
 from dotenv import load_dotenv
 from openai import OpenAI
 from openai import APIError
@@ -38,7 +38,7 @@ class GroqClient(BaseAIClient):
 
     def chat(self, prompt: str) -> str:
 
-        print(f"[Groq] Using {self.model}")
+        debug(f"[Groq] Using {self.model}")
 
         try:
 

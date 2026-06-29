@@ -3,7 +3,7 @@ OpenRouter AI Provider
 """
 
 import os
-
+from src.logger import debug
 from dotenv import load_dotenv
 from openai import OpenAI
 from openai import APIError
@@ -49,8 +49,7 @@ class OpenRouterClient(BaseAIClient):
 
         for model in self.models:
 
-            print(f"[OpenRouter] Trying {model}")
-
+            debug(f"[OpenRouter] Trying {model}")
             try:
 
                 response = self.client.chat.completions.create(
@@ -71,19 +70,19 @@ class OpenRouterClient(BaseAIClient):
                     temperature=0,
                 )
 
-                print(f"[OpenRouter] Success: {model}")
+                debug(f"[OpenRouter] Success: {model}")
 
                 return response.choices[0].message.content
 
             except RateLimitError as error:
 
-                print(f"[OpenRouter] Rate Limited: {model}")
+                debug(f"[OpenRouter] Rate Limited: {model}")
 
                 last_error = error
 
             except APIError as error:
 
-                print(f"[OpenRouter] API Error: {model}")
+                debug(f"[OpenRouter] API Error: {model}")
 
                 last_error = error
 

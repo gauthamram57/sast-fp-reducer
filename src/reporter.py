@@ -1,22 +1,11 @@
 """
 Reporter module.
 
-Responsible for:
-- Displaying results
-- Calculating statistics
-- Saving JSON reports
+Coordinates all report outputs.
 """
 
-import json
-from pathlib import Path
-
-from rich.console import Console
-from rich.table import Table
-
-from src.models import AnalysisResult
-
-
-console = Console()
+from src.report_terminal import TerminalReporter
+from src.report_json import save_json_report
 
 
 class Reporter:
@@ -24,6 +13,8 @@ class Reporter:
     def __init__(self):
 
         self.results = []
+
+        self.terminal = TerminalReporter()
 
     def add_result(self, finding, analysis):
 
@@ -42,17 +33,12 @@ class Reporter:
         fp = 0
         review = 0
 
-        table = Table(title="SAST FP Reducer")
+        self.terminal.print_banner()
 
-        table.add_column("Rule")
-        table.add_column("Severity")
-        table.add_column("Classification")
-        table.add_column("Confidence")
-
-        for item in self.results:
+        for index, item in enumerate(self.results, start=1):
 
             finding = item["finding"]
-            analysis: AnalysisResult = item["analysis"]
+            analysis = item["analysis"]
 
             if analysis.classification == "TRUE_POSITIVE":
                 tp += 1
@@ -63,54 +49,22 @@ class Reporter:
             else:
                 review += 1
 
-            table.add_row(
-                finding.rule_id,
-                finding.severity,
-                analysis.classification,
-                str(analysis.confidence),
+            self.terminal.print_finding(
+                index,
+                finding,
+                analysis,
             )
 
-        console.print(table)
-
-        console.print()
-
-        console.print(f"Total Findings : {total}")
-        console.print(f"True Positives : {tp}")
-        console.print(f"False Positives: {fp}")
-        console.print(f"Needs Review   : {review}")
+        self.terminal.print_summary(
+            total,
+            tp,
+            fp,
+            review,
+        )
 
     def save_json(self, output_file):
 
-        report = []
-
-        for item in self.results:
-
-            finding = item["finding"]
-            analysis = item["analysis"]
-
-            report.append(
-                {
-                    "rule_id": finding.rule_id,
-                    "file": finding.file_path,
-                    "severity": finding.severity,
-                    "classification": analysis.classification,
-                    "confidence": analysis.confidence,
-                    "reasoning": analysis.reasoning,
-                    "developer_action": analysis.developer_action,
-                }
-            )
-
-        Path(output_file).parent.mkdir(
-            parents=True,
-            exist_ok=True,
+        save_json_report(
+            self.results,
+            output_file,
         )
-
-        with open(output_file, "w") as f:
-            json.dump(
-                report,
-                f,
-                indent=4,
-            )
-
-        console.print()
-        console.print(f"Report saved to {output_file}")

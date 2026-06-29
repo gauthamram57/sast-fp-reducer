@@ -2,6 +2,7 @@
 AI Provider Manager
 """
 
+from src.logger import debug
 from src.ai.consensus import ConsensusEngine
 from src.ai.groq_client import GroqClient
 from src.ai.openrouter_client import OpenRouterClient
@@ -37,26 +38,29 @@ class AIManager:
     def analyze(self, prompt: str) -> AnalysisResult:
 
         # ---------- OpenRouter ----------
+
         openrouter_response = self.openrouter.chat(prompt)
 
-        print("\n========== OPENROUTER RESPONSE ==========")
-        print(openrouter_response)
-        print("=========================================\n")
+        debug("\n========== OPENROUTER RESPONSE ==========")
+        debug(openrouter_response)
+        debug("=========================================")
 
         openrouter_data = extract_json(openrouter_response)
         openrouter_result = self._build_result(openrouter_data)
 
         # ---------- Groq ----------
+
         groq_response = self.groq.chat(prompt)
 
-        print("\n============= GROQ RESPONSE =============")
-        print(groq_response)
-        print("=========================================\n")
+        debug("\n============= GROQ RESPONSE =============")
+        debug(groq_response)
+        debug("=========================================")
 
         groq_data = extract_json(groq_response)
         groq_result = self._build_result(groq_data)
 
         # ---------- Consensus ----------
+
         return self.consensus.combine(
             openrouter_result,
             groq_result,
